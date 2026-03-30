@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+httpx
+pymupdf
+langchain
+langchain-ollama
+langchain-text-splitters
+python-multipart
+sqlalchemy
+psycopg2-binary
+pgvector
+streamlit
+pyyaml

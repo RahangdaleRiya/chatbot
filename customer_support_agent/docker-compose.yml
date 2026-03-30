@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_DB: customer_support
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  knowledge_base:
+    build:
+      context: .
+      dockerfile: services/knowledge_base/Dockerfile
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/customer_support
+
+  ticket_retrieval:
+    build:
+      context: .
+      dockerfile: services/ticket_retrieval/Dockerfile
+    ports:
+      - "8002:8002"
+
+  chat_agent:
+    build:
+      context: .
+      dockerfile: services/chat_agent/Dockerfile
+    ports:
+      - "8003:8003"
+    depends_on:
+      - postgres
+      - knowledge_base
+      - ticket_retrieval
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/customer_support
+
+  feedback:
+    build:
+      context: .
+      dockerfile: services/feedback/Dockerfile
+    ports:
+      - "8004:8004"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/customer_support
+
+  ui:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    ports:
+      - "8501:8501"
+    depends_on:
+      - chat_agent
+      - feedback
+
+volumes:
+  postgres_data:
